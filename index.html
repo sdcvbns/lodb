@@ -631,7 +631,16 @@
       video.style.display = 'none';
       iframe.style.display = 'none';
     }
-
+    
+    // 🌟🌟🌟 التعديل لحل مشكلة قنوات Aflam وغيرها: إضافة معالج خطأ للفيديو للتحول إلى iframe 🌟🌟🌟
+    // يضمن هذا أن أي فشل في مشغل الفيديو الأصلي (سواء HLS أو غيره) سيؤدي إلى استخدام iframe
+    video.onerror = function() {
+        console.error('Video element error occurred. Falling back to iframe.');
+        fallbackToIframe(finalUrl);
+        video.onerror = null; // إزالة المعالج بعد الاستخدام
+    };
+    // 🌟🌟🌟 نهاية التعديل 🌟🌟🌟
+    
     if (loadingTimeout) clearTimeout(loadingTimeout);
     loadingTimeout = setTimeout(()=>{ spinner.classList.remove('show'); }, 12000);
   }
@@ -664,6 +673,8 @@
     try { video.pause(); video.removeAttribute('src'); video.load(); } catch(e){}
     // إعادة تعيين src للإطار
     iframe.src = 'about:blank';
+    // إزالة معالج الخطأ للتأكد من عدم تكراره
+    video.onerror = null; 
   }
 
   // دالة جديدة لعرض مربع اختيار الجودة
