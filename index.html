@@ -46,12 +46,59 @@
       max-width:1024px; 
       margin:10px auto; 
       display:grid; 
-      grid-template-columns:1fr 380px; 
+      /* الحفاظ على نمط الشبكة الأصلي (المشغل والقائمة الجانبية) */
+      grid-template-columns: minmax(300px, 1fr) 380px; 
       gap:24px; 
       align-items:start;
-      /* تعديل هام: استخدام minmax لضمان مرونة أكبر في الحجم */
-      grid-template-columns: minmax(300px, 1fr) 380px; 
     }
+    
+    /* ****************************************************** */
+    /* التعديل لنمط التلفزيون (الشاشات الكبيرة) - القائمة أفقية */
+    /* ****************************************************** */
+    @media (min-width: 981px) {
+        .app {
+            /* تعديل هيكل الشبكة ليكون المشغل في الأعلى والقائمة في الأسفل */
+            grid-template-columns: 1fr;
+            max-width: 1400px; /* زيادة أقصى عرض قليلاً ليناسب شاشات التلفزيون */
+        }
+        
+        .list {
+            /* إلغاء الـ box-shadow وتدوير الحواف لنمط أكثر انفتاحاً */
+            box-shadow: none; 
+            border-radius: 0;
+            background: transparent; /* جعل خلفية القائمة شفافة لتمتزج مع خلفية الـ body */
+            margin: 0 -20px -20px; /* ملء العرض من الحواف */
+        }
+
+        .list .header { 
+            /* إزالة الفصل بين الرأس والقنوات */
+            border-bottom: none; 
+            padding: 16px 20px 0; 
+        }
+
+        .channels { 
+            /* التغيير الرئيسي: عرض أفقي (جانبي) */
+            flex-direction: row; 
+            overflow-x: auto; /* تفعيل السحب الأفقي */
+            overflow-y: hidden; /* إخفاء سحب Y */
+            max-height: 150px; /* تقييد الارتفاع للنمط الأفقي */
+            padding: 16px 20px 24px;
+            scroll-behavior: smooth;
+        }
+
+        .channel {
+            /* الحفاظ على حجم منطقي للأفقي وتثبيت العرض */
+            min-width: 280px; /* تحديد عرض ثابت للقناة */
+            flex-shrink: 0; /* منع تقلص القناة عند عدم وجود مساحة كافية */
+            background: var(--panel); /* إعادة تطبيق الخلفية هنا */
+            border: 2px solid transparent;
+            box-shadow:0 4px 10px rgba(0,0,0,0.4);
+        }
+        .channel:hover{ transform:translateY(0) scale(1.02); }
+        .channel.active { transform: scale(1.02); } /* تأثير بسيط للقناة النشطة */
+    }
+    /* ****************************************************** */
+    
     @media (max-width:980px){ 
       .app{
         grid-template-columns:1fr;
@@ -59,6 +106,11 @@
         padding: 0; 
       } 
       .player{order:-1} 
+      .list {
+        /* إرجاع الحشو بعد إزالته من الجسم ليتم تفعيله هنا فقط */
+        margin: 20px;
+        border-radius: var(--radius);
+      }
     }
 
     .player { 
@@ -73,8 +125,9 @@
     }
     @media (min-width:981px){
       .player {
-        margin: 0;
+        margin: 0 auto;
         border-radius: var(--radius);
+        max-width: 1024px; /* تحديد أقصى عرض للمشغل على الشاشات الكبيرة */
       }
     }
 
@@ -112,18 +165,14 @@
     .spinner svg circle { stroke:var(--accent); stroke-dasharray:31.4 31.4; }
 
     .list { background: var(--panel); border-radius:var(--radius); overflow:hidden; box-shadow:0 8px 30px rgba(0,0,0,0.4); }
-    @media (max-width:980px){
-      .list {
-        /* إرجاع الحشو بعد إزالته من الجسم ليتم تفعيله هنا فقط */
-        margin: 20px;
-        border-radius: var(--radius);
-      }
-    }
+    
     .list .header { padding:16px 20px; display:flex; align-items:center; gap:10px; border-bottom:1px solid rgba(255,255,255,0.05); }
     .list h2{ margin:0; font-size:18px; font-weight:700; color:var(--accent) }
     .list .count { margin-right:auto; color:var(--muted); font-size:14px; }
 
+    /* القائمة العمودية الافتراضية للهواتف والشاشات الأصغر */
     .channels { display:flex; flex-direction:column; gap:10px; padding:16px; max-height:70vh; overflow:auto; }
+    
     .channel { background:rgba(255,255,255,0.03); padding:16px; border-radius:12px; display:flex; gap:14px; align-items:center; transition: transform .2s ease, background .2s; cursor:pointer; border:2px solid transparent; }
     .channel:hover{ transform:translateY(-3px); box-shadow:0 8px 20px rgba(0,0,0,0.4); background:rgba(255,255,255,0.05); }
     .channel.active { border-color:var(--accent); background:rgba(0,204,153,0.1); }
@@ -418,7 +467,8 @@
     miniNum.textContent = ch.id;
     mobileMini.style.display = window.innerWidth <= 980 ? 'block' : 'none';
 
-    last = { id: ch.id, name: ch.name, time: (new Date()).toISOString() };
+    // حفظ الرابط والجودة الأخيرة لتشغيلها عند الضغط على زر التشغيل الكبير
+    last = { id: ch.id, name: ch.name, time: (new Date()).toISOString(), lastUrl: url, lastQuality: qualityText };
     saveLast();
 
     const finalUrl = url && url.trim() ? url.trim() : '';
@@ -600,12 +650,32 @@
 
     const focusable = Array.from(document.querySelectorAll('.channel'));
     const idx = focusable.indexOf(document.activeElement);
-    if (e.key === 'ArrowDown'){ e.preventDefault(); const next = focusable[idx+1] || focusable[0]; next.focus(); }
-    else if (e.key === 'ArrowUp'){ e.preventDefault(); const prev = focusable[idx-1] || focusable[focusable.length-1]; prev.focus(); }
-    else if (e.key === 'Enter' && document.activeElement.classList.contains('channel')) document.activeElement.click();
+    
+    // تعديل حركة الأسهم ليناسب النمط الأفقي على الشاشات الكبيرة
+    if (window.innerWidth > 980) {
+        // إذا كانت الشاشة كبيرة (نمط التلفزيون/أفقي):
+        if (e.key === 'ArrowRight'){ e.preventDefault(); const next = focusable[idx+1] || focusable[0]; next.focus(); }
+        else if (e.key === 'ArrowLeft'){ e.preventDefault(); const prev = focusable[idx-1] || focusable[focusable.length-1]; prev.focus(); }
+        // استخدام ArrowUp/ArrowDown للتمرير (scroll) الأفقي
+        else if (e.key === 'ArrowDown' || e.key === 'ArrowUp'){ 
+             const scrollAmount = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 300 : -300;
+             listEl.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        }
+    } else {
+        // إذا كانت الشاشة صغيرة (نمط الهاتف/عمودي):
+        if (e.key === 'ArrowDown'){ e.preventDefault(); const next = focusable[idx+1] || focusable[0]; next.focus(); }
+        else if (e.key === 'ArrowUp'){ e.preventDefault(); const prev = focusable[idx-1] || focusable[focusable.length-1]; prev.focus(); }
+    }
+    
+    // مفتاح التشغيل (Enter) يعمل في كلتا الحالتين
+    if (e.key === 'Enter' && document.activeElement.classList.contains('channel')) document.activeElement.click();
   });
 
-  window.addEventListener('resize', ()=> { if (window.innerWidth > 980) mobileMini.style.display = 'none'; });
+  window.addEventListener('resize', ()=> { 
+    if (window.innerWidth > 980) mobileMini.style.display = 'none'; 
+    // إذا كان العرض يمر بالعتبة 980، قم بإعادة رسم القائمة لضمان تطبيق الأنماط الصحيحة
+    // renderList(); // ليس ضرورياً إذا كان التعديل في CSS فقط
+  });
 
   // initialize UI
   if (channels.length > 0) {
