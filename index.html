@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" /> 
-  <title>مشغل Shabak - نمط التلفزيون</title>
+  <title>مشغل Shabak - HLS مدمج</title>
   <style>
     /*
     * ----------------------------------------
@@ -29,8 +29,7 @@
       --sd-color: #5aa9e6;
       --hd-color: #ff9f1c;
       --fhd-color: #e65a5a;
-      /* لون التحديد الجديد للـ TV */
-      --tv-active-bg: #27303a; 
+      --soon-color: #7f8c8d; /* لون جديد لقنوات Soon */
     }
     *{box-sizing:border-box}
     body{
@@ -40,143 +39,46 @@
       color:#e6f0ef;
       padding:20px;
       min-height:100vh;
-      /* إضافة للتأكد من استخدام كل مساحة الشاشة على الأجهزة المحمولة */
       min-height: 100dvh; 
       overflow-x: hidden;
     }
-    
-    /* النمط الافتراضي (الهاتف/اللوحي): المشغل أولاً والقائمة أسفله */
     .app { 
       max-width:1024px; 
       margin:10px auto; 
-      display:grid; 
-      grid-template-columns: 1fr; /* عمود واحد */
-      gap:24px; 
-      align-items:start;
+      /* التعديل الرئيسي: أصبح نظام عمود واحد فقط يمتد على كامل العرض */
+      display:block; 
+      gap:0; 
       padding: 0;
     }
-    
-    .list {
-      margin: 20px;
-      border-radius: var(--radius);
-      box-shadow:0 8px 30px rgba(0,0,0,0.4); 
-      background: var(--panel);
+    @media (max-width:1064px){ 
+      /* إزالة الهامش على الشاشات الصغيرة لجعل المحتوى يمتد بالكامل */
+      .app { margin: 0 auto; }
     }
-    
-    .player{ order: -1; } /* المشغل يأتي أولاً على الهاتف */
 
-
-    /* ---------------------------------------------------------------------- */
-    /* ************* التعديل لنظام التلفزيون (أكبر من 980 بكسل) ************* */
-    /* ---------------------------------------------------------------------- */
-    @media (min-width: 981px) {
-        body { 
-          padding: 0; /* استخدم الشاشة كاملة */
-          overflow-y: hidden; /* لمنع التمرير */
-        }
-        .app {
-            max-width: none; 
-            margin: 0;
-            /* الترتيب الجديد: القائمة (300px) على اليمين، المشغل على اليسار (بقية المساحة) */
-            grid-template-columns: minmax(600px, 1fr) 300px; 
-            min-height: 100vh; 
-            gap: 0; /* لإزالة الفراغ بين المشغل والقائمة */
-        }
-        
-        /* المشغل على اليسار */
-        .player {
-            grid-column: 1 / 2;
-            border-radius: 0;
-            box-shadow: none;
-            /* لجعل ارتفاعه مساوياً لارتفاع الشاشة */
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            background: #000; /* خلفية سوداء للمشغل لملء الشاشة */
-        }
-        .player .meta { flex-shrink: 0; } /* لا يتقلص شريط التحكم */
-        .video-wrap { 
-          flex-grow: 1; /* ليكبر ويملأ المساحة المتبقية */
-          height: auto; /* لإلغاء الـ clamp على التلفزيون */
-        }
-        video#mainVideo, iframe#mainIframe { object-fit: contain; } /* لضمان ملء المساحة دون قطع */
-
-        /* القائمة (Sidebar) على اليمين */
-        .list {
-            grid-column: 2 / 3;
-            margin: 0;
-            border-radius: 0;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5); 
-            background: var(--panel);
-            /* لملء ارتفاع الشاشة */
-            height: 100vh; 
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .list .header { 
-            display: none; /* إخفاء العنوان الافتراضي للقائمة */
-        }
-
-        .channels { 
-            flex-direction: column;
-            overflow-y: auto;
-            flex-grow: 1;
-            padding: 10px 0; /* تعديل المسافة الرأسية */
-            gap: 0; /* إزالة الفراغ بين القنوات في الـ TV */
-            /* نمط شريط التمرير لأجهزة التلفزيون - إخفاءه */
-            -ms-overflow-style: none; /* IE and Edge */
-            scrollbar-width: none; /* Firefox */
-        }
-        .channels::-webkit-scrollbar {
-            display: none; /* Chrome, Safari, Opera */
-        }
-
-        .channel { 
-            background: transparent;
-            padding: 18px 20px; /* تباعد أكبر للـ TV */
-            border-radius: 0;
-            border: none;
-            border-left: 6px solid transparent; /* مساحة لخط التحديد */
-            transition: background 0.2s, border-left-color 0.2s;
-            transform: none;
-            box-shadow: none;
-        }
-        /* إزالة تأثير التحويم (Hover) لأنه غير مستخدم بالريموت */
-        .channel:hover { 
-          transform: none; 
-          box-shadow: none;
-          background: transparent;
-        }
-        
-        /* حالة التحديد (Focus / Active) */
-        .channel:focus, .channel.active { 
-            border-color: var(--accent); /* خط التحديد الأخضر على اليسار */
-            background: var(--tv-active-bg); 
-            transform: scale(1.02); /* تأثير خفيف عند التحديد */
-            box-shadow: 0 0 10px rgba(0,0,0,0.2);
-            outline: none; /* إزالة خط التركيز الافتراضي */
-        }
-        
-        .left { display: none; } /* إخفاء رقم القناة */
-        .info { gap: 0; }
-        .title { font-weight: 600; font-size: 18px; }
-        .meta { 
-          display: none; /* إخفاء نص "اضغط لاختيار الجودة" */
-        }
-        .actions { 
-          display: none; /* إخفاء زر المفضلة */
-        }
+    .player { 
+      background: var(--panel); 
+      border-radius:var(--radius); 
+      overflow:hidden; 
+      box-shadow:0 12px 40px rgba(0,0,0,0.5); 
+      position:relative; 
+      /* إزالة الحدود على الشاشات الصغيرة لملء العرض */
+      margin: -20px -20px 20px -20px; 
+      border-radius: 0;
     }
-    /* ---------------------------------------------------------------------- */
-    
+    @media (min-width:1065px){
+      .player {
+        margin: 0 0 20px 0;
+        border-radius: var(--radius);
+      }
+    }
+
     .player .meta { display:flex; justify-content:space-between; align-items:center; padding:14px 20px; gap:10px; border-bottom:1px solid rgba(255,255,255,0.05); }
     .channel-title { font-size:20px; font-weight:700; }
     .meta .controls { display:flex; gap:10px; align-items:center; }
 
     .video-wrap { 
       position:relative; 
+      /* تعديل لتحديد ارتفاع المشغل على الأجهزة الصغيرة والكبيرة */
       height: clamp(200px, 50vw, 550px); 
       min-height:280px; 
       background:#000; 
@@ -202,8 +104,160 @@
     @keyframes spin{ from{ transform:translate(-50%,-50%) rotate(0) } to{ transform:translate(-50%,-50%) rotate(360deg) } }
     .spinner svg circle { stroke:var(--accent); stroke-dasharray:31.4 31.4; }
 
+    /*
+    * ----------------------------------------
+    * 2. تنسيق قائمة القنوات الأفقية الجديدة
+    * ----------------------------------------
+    */
+    .list-container { 
+      /* إزالة خلفية الصندوق وتطبيق الهامش/الحشو على مستوى المجموعات */
+      display: block;
+      padding: 0 0 40px; 
+    }
+    @media (max-width:1064px){
+      .list-container {
+        /* إرجاع الحشو الأفقي الذي أزيل من body */
+        padding-left: 20px;
+        padding-right: 20px;
+        padding-bottom: 120px; /* زيادة الهامش للمشغل المصغر */
+      }
+    }
     
-    /* ----------------------------------------
+    .channels-group {
+      margin-bottom: 30px; /* مسافة بين مجموعات القنوات */
+      padding: 0; 
+      display: flex;
+      flex-direction: column;
+      gap: 15px; /* مسافة بين العنوان وقائمة القنوات */
+    }
+    .channels-group-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #e6f0ef; /* لون أبيض */
+      border-bottom: 2px solid rgba(255,255,255,0.05); 
+      padding-bottom: 8px;
+    }
+
+    /* التعديل الرئيسي لجعله تمرير أفقي */
+    .channels { 
+      display: flex; /* ترتيب العناصر أفقياً */
+      gap: 15px; /* مسافة بين البطاقات */
+      overflow-x: auto; /* تمكين التمرير الأفقي */
+      overflow-y: hidden; 
+      padding-bottom: 10px; /* حشو للسماح بظهور شريط التمرير */
+    }
+    /* إخفاء شريط التمرير (اختياري) */
+    .channels::-webkit-scrollbar {
+        height: 6px;
+    }
+    .channels::-webkit-scrollbar-thumb {
+        background: var(--accent-dark);
+        border-radius: 3px;
+    }
+    .channels::-webkit-scrollbar-track {
+        background: var(--panel);
+        border-radius: 3px;
+    }
+    
+    .channel { 
+      background:var(--panel); 
+      padding:16px; 
+      border-radius:12px; 
+      display:flex; 
+      flex-direction: column;
+      gap:8px; 
+      align-items:center;
+      text-align: center;
+      transition: transform .2s ease, background .2s; 
+      cursor:pointer; 
+      border:2px solid transparent;
+      
+      /* تحديد عرض ثابت للبطاقة لتمكين التمرير الأفقي */
+      width: 130px; 
+      min-width: 130px; /* ضمان عدم انكماشها */
+      height: 100%; 
+      flex-shrink: 0; /* منع البطاقات من الانكماش لتناسب الشاشة */
+      box-shadow:0 4px 10px rgba(0,0,0,0.3);
+    }
+    .channel:hover{ 
+      transform:translateY(-3px); 
+      box-shadow:0 8px 20px rgba(0,0,0,0.4); 
+      background:rgba(255,255,255,0.05); 
+    }
+    .channel.active { 
+      border-color:var(--accent); 
+      background:rgba(0,204,153,0.1); 
+    }
+    /* تنسيق خاص لقنوات Soon */
+    .channel.soon {
+      opacity: 0.6;
+      cursor: default;
+      background: rgba(127, 140, 141, 0.1);
+      border-color: var(--soon-color);
+    }
+    .channel.soon:hover {
+      transform: none;
+      box-shadow: none;
+      background: rgba(127, 140, 141, 0.15);
+    }
+
+    .left { 
+      width:48px;
+      height:48px;
+      border-radius:50%; 
+      background:var(--accent); 
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+      color:var(--bg); 
+      font-size:16px;
+      border:none; 
+      box-shadow:0 4px 10px rgba(0,204,153,0.4); 
+      flex-shrink: 0; 
+    }
+    .info { 
+      flex:1; 
+      display:flex; 
+      flex-direction:column; 
+      gap:4px;
+      align-items: center; 
+    }
+    .title { font-weight:600; font-size:16px }
+    .meta { color:var(--muted); font-size:13px; display:block; }
+
+    .actions { display:none; }
+    .heart { display:none; } 
+
+    .btn { background:var(--accent); color:var(--bg); padding:8px 14px; border-radius:8px; font-weight:600; font-size:14px; border:none; cursor:pointer; transition:background .2s, transform .1s; box-shadow:0 3px 6px rgba(0,0,0,0.3); }
+    .btn:hover { background:var(--accent-dark); transform:translateY(-1px); box-shadow:0 5px 8px rgba(0,0,0,0.4); }
+    .btn#btnStop { background:#ff5252; }
+    .btn#btnStop:hover { background:#d43c3c; }
+    /* إخفاء زر الخروج من ملء الشاشة */
+    .btn#btnExitFs { display: none; }
+
+
+    .mobile-player-mini { display:none; }
+    @media (max-width:1064px){ 
+      .mobile-player-mini{ 
+        display:block; 
+        position:fixed; 
+        left:20px; 
+        right:20px; 
+        bottom:20px; 
+        z-index:100; 
+        background:var(--panel); 
+        padding:12px; 
+        border-radius:16px; 
+        box-shadow:0 10px 40px rgba(0,0,0,0.6); 
+        border:1px solid rgba(255,255,255,0.1); 
+      } 
+    }
+    .fade-in { animation:fadeIn .5s ease both }
+    @keyframes fadeIn { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none} }
+
+    /*
+    * ----------------------------------------
     * 3. تصميم مربع اختيار الجودة (Quality Modal)
     * ----------------------------------------
     */
@@ -262,11 +316,6 @@
         color: var(--bg);
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
     }
-    /* التحديد بالريموت */
-    .quality-option:focus {
-        outline: 3px solid var(--accent);
-        transform: scale(1.05);
-    }
     .quality-option:hover {
         opacity: 0.9;
         transform: translateY(-2px);
@@ -286,16 +335,14 @@
         cursor: pointer;
         transition: background 0.2s;
     }
-    .quality-cancel:hover, .quality-cancel:focus {
+    .quality-cancel:hover {
         background: rgba(255, 255, 255, 0.05);
-        outline: none;
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.0"></script>
 </head>
 <body>
   <div class="app fade-in">
-    
     <div class="player" id="playerWrap">
       <div class="meta">
         <div style="display:flex;align-items:center;gap:12px">
@@ -303,6 +350,7 @@
           <div style="color:var(--muted);font-size:14px" id="currentNumber"></div>
         </div>
         <div class="controls">
+          <button class="btn" id="btnExitFs" title="خروج من ملء الشاشة">خروج ملء الشاشة</button> 
           <button class="btn" id="btnStop" title="إيقاف">إيقاف</button>
         </div>
       </div>
@@ -324,16 +372,9 @@
         <iframe id="mainIframe" allowfullscreen="true" frameborder="0" height="100%" scrolling="1" src="" style="display:none"></iframe>
       </div>
     </div>
-    
-    <div class="list fade-in" style="animation-delay:.08s">
-      <div class="header">
-        <h2>قائمة القنوات</h2>
-        <div class="count" id="countTxt">12 قناة</div>
-      </div>
 
-      <div class="channels" id="channelsList"></div>
-    </div>
-
+    <div id="channelsList" class="list-container fade-in" style="animation-delay:.08s">
+        </div>
   </div>
 
   <div class="mobile-player-mini" id="mobileMini" style="display:none">
@@ -359,21 +400,38 @@
 
 <script>
   // ---------------- CONFIG: ضع روابطك الحقيقية هنا في url ----------------
-  const channels = [
-    // تم تحديث هيكل القنوات ليشمل روابط لكل جودة (SD, HD, FHD)
-    { id:1, name:"Al Rabiaa TV", links: { SD:"https://stream.supertv.gg:3001/supertv/sport/stv1/ch1/ch1_240.m3u8", HD:"https://stream.supertv.gg:3001/supertv/sport/stv1/ch1/ch1_480.m3u8", FHD:"https://stream.supertv.gg:3001/supertv/sport/stv1/ch1/ch1_720.m3u8" } },
-    { id:2, name:"Iraqia News", links: { SD:"https://stream.supertv.gg:3002/supertv/sport/stv2/ch2/ch2_240.m3u8", HD:"https://stream.supertv.gg:3002/supertv/sport/stv2/ch2/ch2_480.m3u8", FHD:"https://stream.supertv.gg:3002/supertv/sport/stv2/ch2/ch2_720.m3u8" } },
-    { id:3, name:"Iraqia Sport HD", links: { SD:"https://live.asset.televika.com/9c0354b9d93f1e2c123c8d88b4a4f2a7/tvhls/varzeshhdfootbali_s1_480p/index.m3u8", HD:"https://live.asset.televika.com/9c0354b9d93f1e2c123c8d88b4a4f2a7/tvhls/varzeshhdfootbali_s1_720p/index.m3u8", FHD:"https://live.asset.televika.com/9c0354b9d93f1e2c123c8d88b4a4f2a7/tvhls/varzeshhdfootbali_s1_1080p/index.m3u8" } },
-    { id:4, name:"Al Sharqiya", links: { SD:"https://wo.cma.footballii.ir/hls2/tv3_480.m3u8", HD:"https://wo.cma.footballii.ir/hls2/tv3.m3u8", FHD: "" } }, 
-    { id:5, name:"Al Sharqiya News", links: { SD:"https://alpha.tv.online.tm/hls/ch000_400/index.m3u8", HD:"https://alpha.tv.online.tm/hls/ch000_720/index.m3u8", FHD: "https://alpha.tv.online.tm/hls/ch000_1080/index.m3u8" } },
-    { id:6, name:"Saudi Quraan", links: { SD:"https://ncdn.telewebion.com/sport1/live/playlist_480.m3u8", HD:"https://ncdn.telewebion.com/sport1/live/playlist.m3u8", FHD: "" } },
-    { id:7, name:"Online Sport HD", links: { SD:"https://wo.cma.footballii.ir/hls2/solh_480.m3u8", HD:"https://wo.cma.footballii.ir/hls2/solh.m3u8", FHD: "" } },
-    { id:8, name:"Online Sport NEWS", links: { SD:"https://live-azd1108.telewebion.com/ek/sport1/live/480p/index.m3u8", HD:"https://live-azd1108.telewebion.com/ek/sport1/live/720p/index.m3u8", FHD: "" } },
-    { id:9, name:"Shabak Aflam 1", links: { SD:"https://shls-live-enc.edgenextcdn.net/out/v1/f6d718e841f8442f8374de47f18c93a7/index_sd.m3u8", HD:"https://shls-live-enc.edgenextcdn.net/out/v1/f6d718e841f8442f8374de47f18c93a7/index.m3u8", FHD:"" } },
-    { id:10, name:"Shabak Aflam 2", links: { SD:"https://shls-live-enc.edgenextcdn.net/out/v1/948c54279b594944adde578c95f1d7d1/index_sd.m3u8", HD:"https://shls-live-enc.edgenextcdn.net/out/v1/948c54279b594944adde578c95f1d7d1/index.m3u8", FHD:"" } },
-    { id:11, name:"Shabak Aflam 3", links: { SD:"https://shls-live-enc.edgenextcdn.net/out/v1/46079e838e65490c8299f902a7731168/index_sd.m3u8", HD:"https://shls-live-enc.edgenextcdn.net/out/v1/46079e838e65490c8299f902a7731168/index.m3u8", FHD:"" } },
-    { id:12, name:"Shabak Aflam 4", links: { SD:"", HD:"", FHD:"" } }
+  const allChannels = [
+    // Shabak Sport 1-8
+    { id:1, name:"Shabak Sport 1", links: { SD:"https://stream.supertv.gg:3001/supertv/sport/stv1/ch1/ch1_240.m3u8", HD:"https://stream.supertv.gg:3001/supertv/sport/stv1/ch1/ch1_480.m3u8", FHD:"https://stream.supertv.gg:3001/supertv/sport/stv1/ch1/ch1_720.m3u8" }, category: 'Sport' },
+    { id:2, name:"Shabak Sport 2", links: { SD:"https://stream.supertv.gg:3002/supertv/sport/stv2/ch2/ch2_240.m3u8", HD:"https://stream.supertv.gg:3002/supertv/sport/stv2/ch2/ch2_480.m3u8", FHD:"https://stream.supertv.gg:3002/supertv/sport/stv2/ch2/ch2_720.m3u8" }, category: 'Sport' },
+    { id:3, name:"Shabak Sport 3", links: { SD:"https://live.asset.televika.com/9c0354b9d93f1e2c123c8d88b4a4f2a7/tvhls/varzeshhdfootbali_s1_480p/index.m3u8", HD:"https://live.asset.televika.com/9c0354b9d93f1e2c123c8d88b4a4f2a7/tvhls/varzeshhdfootbali_s1_720p/index.m3u8", FHD:"https://live.asset.televika.com/9c0354b9d93f1e2c123c8d88b4a4f2a7/tvhls/varzeshhdfootbali_s1_1080p/index.m3u8" }, category: 'Sport' },
+    { id:4, name:"Shabak Sport 4", links: { SD:"https://wo.cma.footballii.ir/hls2/tv3_480.m3u8", HD:"https://wo.cma.footballii.ir/hls2/tv3.m3u8", FHD: "" }, category: 'Sport' }, 
+    { id:5, name:"Shabak Sport 5", links: { SD:"https://alpha.tv.online.tm/hls/ch000_400/index.m3u8", HD:"https://alpha.tv.online.tm/hls/ch000_720/index.m3u8", FHD: "https://alpha.tv.online.tm/hls/ch000_1080/index.m3u8" }, category: 'Sport' },
+    { id:6, name:"Shabak Sport 6", links: { SD:"https://ncdn.telewebion.com/sport1/live/playlist_480.m3u8", HD:"https://ncdn.telewebion.com/sport1/live/playlist.m3u8", FHD: "" }, category: 'Sport' },
+    { id:7, name:"Shabak Sport 7", links: { SD:"https://wo.cma.footballii.ir/hls2/solh_480.m3u8", HD:"https://wo.cma.footballii.ir/hls2/solh.m3u8", FHD: "" }, category: 'Sport' },
+    { id:8, name:"Shabak Sport 8", links: { SD:"https://live-azd1108.telewebion.com/ek/sport1/live/480p/index.m3u8", HD:"https://live-azd1108.telewebion.com/ek/sport1/live/720p/index.m3u8", FHD: "" }, category: 'Sport' },
+    // Shabak Aflam 1-4
+    { id:9, name:"Shabak Aflam 1", links: { SD:"https://shls-live-enc.edgenextcdn.net/out/v1/f6d718e841f8442f8374de47f18c93a7/index_sd.m3u8", HD:"https://shls-live-enc.edgenextcdn.net/out/v1/f6d718e841f8442f8374de47f18c93a7/index.m3u8", FHD:"" }, category: 'Aflam' },
+    { id:10, name:"Shabak Aflam 2", links: { SD:"https://shls-live-enc.edgenextcdn.net/out/v1/948c54279b594944adde578c95f1d7d1/index_sd.m3u8", HD:"https://shls-live-enc.edgenextcdn.net/out/v1/948c54279b594944adde578c95f1d7d1/index.m3u8", FHD:"" }, category: 'Aflam' },
+    { id:11, name:"Shabak Aflam 3", links: { SD:"https://shls-live-enc.edgenextcdn.net/out/v1/46079e838e65490c8299f902a7731168/index_sd.m3u8", HD:"https://shls-live-enc.edgenextcdn.net/out/v1/46079e838e65490c8299f902a7731168/index.m3u8", FHD:"" }, category: 'Aflam' },
+    { id:12, name:"Shabak Aflam 4", links: { SD:"", HD:"", FHD:"" }, category: 'Aflam' },
+    // Soon 1-5
+    { id:13, name:"Soon 1", links: { SD:"", HD:"", FHD:"" }, category: 'Soon' },
+    { id:14, name:"Soon 2", links: { SD:"", HD:"", FHD:"" }, category: 'Soon' },
+    { id:15, name:"Soon 3", links: { SD:"", HD:"", FHD:"" }, category: 'Soon' },
+    { id:16, name:"Soon 4", links: { SD:"", HD:"", FHD:"" }, category: 'Soon' },
+    { id:17, name:"Soon 5", links: { SD:"", HD:"", FHD:"" }, category: 'Soon' },
   ];
+
+  // دالة لتجميع القنوات حسب الفئة
+  const groupedChannels = allChannels.reduce((acc, channel) => {
+    const category = channel.category;
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(channel);
+    return acc;
+  }, {});
   // ----------------------------------------------------------------------
 
   const listEl = document.getElementById('channelsList');
@@ -387,7 +445,10 @@
   const miniTitle = document.getElementById('miniTitle');
   const miniNum = document.getElementById('miniNum');
   const btnStop = document.getElementById('btnStop');
+  // تم إلغاء countTxt لأنه لم يعد يظهر في الـ UI
+  // const countTxt = document.getElementById('countTxt');
 
+  // عناصر مربع اختيار الجودة
   const qualityModal = document.getElementById('qualityModal');
   const modalChannelTitle = document.getElementById('modalChannelTitle');
   const qualityOptionsEl = document.getElementById('qualityOptions');
@@ -400,6 +461,7 @@
   function saveFavs(){ localStorage.setItem('shabak_favs', JSON.stringify(favs)); }
   function saveLast(){ localStorage.setItem('shabak_last', JSON.stringify(last)); }
   
+  // 1. منع زر الفأرة الأيمن (Context Menu) باستخدام JavaScript
   document.addEventListener('contextmenu', e => e.preventDefault());
 
 
@@ -408,16 +470,22 @@
     const item = document.createElement('div');
     item.className = 'channel';
     item.setAttribute('data-id', ch.id);
-    // إضافة tabindex 0 لضمان التركيز باستخدام الريموت
-    item.setAttribute('tabindex', '0');
     if(last && last.id === ch.id) item.classList.add('active');
+    
+    // إضافة فئة 'soon' للقنوات الجديدة لتعطيل النقر
+    if (ch.category === 'Soon') {
+        item.classList.add('soon');
+    }
 
     const left = document.createElement('div'); left.className = 'left'; left.textContent = ch.id;
     const info = document.createElement('div'); info.className='info';
     const t = document.createElement('div'); t.className='title'; t.textContent = ch.name;
-    const m = document.createElement('div'); m.className='meta'; m.textContent = 'اضغط لاختيار الجودة';
+    const m = document.createElement('div'); 
+    m.className='meta'; 
+    m.textContent = ch.category === 'Soon' ? 'قريباً' : 'اضغط لاختيار الجودة';
     info.appendChild(t); info.appendChild(m);
 
+    // تم إخفاء زر المفضلة عبر CSS
     const actions = document.createElement('div'); actions.className='actions';
     const heart = document.createElement('button');
     heart.className='heart'; heart.setAttribute('aria-label','اضافة للمفضلة');
@@ -430,30 +498,66 @@
       else { favs.push(ch.id); heart.classList.add('active'); }
       saveFavs();
     });
+    actions.appendChild(heart);
+    item.appendChild(left); item.appendChild(info); item.appendChild(actions);
 
+    // إظهار مربع اختيار الجودة بدلاً من التشغيل المباشر
     item.addEventListener('click', ()=>{
+        if (ch.category === 'Soon') return; // لا تفعل شيئاً لقنوات Soon
         document.querySelectorAll('.channel').forEach(c=>c.classList.remove('active'));
         item.classList.add('active');
         showQualityModal(ch);
     });
 
-    actions.appendChild(heart);
-    item.appendChild(left); item.appendChild(info); item.appendChild(actions);
-
     return item;
   }
-
+  
+  // دالة عرض القائمة الجديدة
   function renderList(){
     listEl.innerHTML = '';
-    channels.forEach(ch => listEl.appendChild(createChannelItem(ch)));
-    document.getElementById('countTxt').textContent = channels.length + " قناة";
-    // التأكد من أن القائمة تظهر بشكل صحيح
-    if (last && last.id) {
-        const lastChannelEl = document.querySelector(`.channel[data-id="${last.id}"]`);
-        if (lastChannelEl) {
-            lastChannelEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    
+    // أسماء العرض للفئات
+    const categoryTitles = {
+      Sport: 'قنوات Shabak Sport (1-8)',
+      Aflam: 'قنوات Shabak Aflam (1-4)',
+      Soon: 'قنوات قريباً (Soon)',
+    };
+
+    // ترتيب العرض
+    const categoriesOrder = ['Sport', 'Aflam', 'Soon'];
+    
+    let totalChannels = 0;
+
+    categoriesOrder.forEach(category => {
+        const groupChannels = groupedChannels[category];
+        if (groupChannels && groupChannels.length > 0) {
+            // إنشاء حاوية المجموعة
+            const groupWrap = document.createElement('div');
+            groupWrap.className = 'channels-group';
+
+            // عنوان المجموعة
+            const titleEl = document.createElement('div');
+            titleEl.className = 'channels-group-title';
+            titleEl.textContent = categoryTitles[category] || category;
+            groupWrap.appendChild(titleEl);
+            
+            // حاوية القنوات في شكل تمرير أفقي
+            const channelsContainer = document.createElement('div');
+            channelsContainer.className = 'channels';
+            
+            groupChannels.forEach(ch => {
+                channelsContainer.appendChild(createChannelItem(ch));
+                totalChannels++;
+            });
+            
+            groupWrap.appendChild(channelsContainer);
+            listEl.appendChild(groupWrap);
         }
-    }
+    });
+
+    // تم إلغاء عرض عدد القنوات في الواجهة
+    // countTxt.textContent = totalChannels + " قناة";
+    setTimeout(()=> document.querySelectorAll('.channel:not(.soon)').forEach(c=>c.setAttribute('tabindex','0')), 50);
   }
 
   renderList();
@@ -466,24 +570,25 @@
     return url.includes('.m3u8') || /m3u8/.test(url);
   }
 
+  // دالة playChannel الآن تتلقى الرابط مباشرة بدلاً من كائن القناة الكامل
   function playChannel(ch, url, qualityText){
+    // UI updates
     spinner.classList.add('show');
     bigPlay.style.display = 'none';
-    
+    // تحديث عنوان المشغل ليشمل الجودة
     currentTitle.textContent = `${ch.name} (${qualityText})`; 
     currentNumber.textContent = ' | ' + ch.id;
     miniTitle.textContent = `${ch.name} (${qualityText})`;
     miniNum.textContent = ch.id;
-    mobileMini.style.display = window.innerWidth <= 980 ? 'block' : 'none';
+    mobileMini.style.display = window.innerWidth <= 1064 ? 'block' : 'none';
 
-    // تحديث حالة 'active' للقناة في القائمة
-    document.querySelectorAll('.channel').forEach(c=>c.classList.remove('active'));
-    document.querySelector(`.channel[data-id="${ch.id}"]`)?.classList.add('active');
-
+    // حفظ الرابط الأخير والجودة لـ bigPlay
     last = { id: ch.id, name: ch.name, time: (new Date()).toISOString(), lastUrl: url, lastQuality: qualityText };
     saveLast();
 
     const finalUrl = url && url.trim() ? url.trim() : '';
+
+    // stop any existing playback & cleanup
     cleanupPlayback();
 
     if (isHlsUrl(finalUrl)) {
@@ -522,7 +627,7 @@
       spinner.classList.remove('show');
       bigPlay.style.display = 'flex';
       currentTitle.textContent = `${ch.name} (لا يوجد رابط لهذه الجودة)`;
-      currentNumber.textContent = ''; 
+      currentNumber.textContent = ''; // مسح رقم القناة
       video.style.display = 'none';
       iframe.style.display = 'none';
     }
@@ -552,44 +657,50 @@
     });
   }
 
+  // cleanup any prior playback
   function cleanupPlayback(){
     spinner.classList.remove('show');
     if (hlsInstance){ try { hlsInstance.destroy(); } catch(e){} hlsInstance = null; }
     try { video.pause(); video.removeAttribute('src'); video.load(); } catch(e){}
+    // إعادة تعيين src للإطار
     iframe.src = 'about:blank';
   }
 
+  // دالة جديدة لعرض مربع اختيار الجودة
   function showQualityModal(ch) {
     selectedChannelForQuality = ch;
     modalChannelTitle.textContent = `اختر جودة التشغيل لقناة: ${ch.name}`;
-    qualityOptionsEl.innerHTML = ''; 
+    qualityOptionsEl.innerHTML = ''; // تنظيف الخيارات القديمة
 
     const qualities = { SD: "SD", HD: "HD", FHD: "FHD" };
     const qualityNames = { SD: "جودة عادية (SD)", HD: "جودة عالية (HD)", FHD: "جودة كاملة (FHD)" };
     
+    let hasValidLink = false;
+
     // إنشاء أزرار الجودة المتاحة
-    let firstQualityButton = null;
     Object.entries(qualities).forEach(([key, value]) => {
       const url = ch.links[key];
       if (url) {
+        hasValidLink = true;
         const btn = document.createElement('button');
         btn.className = 'quality-option';
         btn.setAttribute('data-quality', key);
         btn.textContent = qualityNames[key];
-        btn.setAttribute('tabindex', '0'); // إضافة tabindex للتحكم بالريموت
         
         btn.addEventListener('click', () => {
+          // تشغيل القناة بالرابط المختار ونص الجودة
           playChannel(ch, url, value);
           hideQualityModal();
         });
         qualityOptionsEl.appendChild(btn);
-        if (!firstQualityButton) firstQualityButton = btn;
       }
     });
 
+    if (!hasValidLink) {
+        qualityOptionsEl.innerHTML = '<p style="color:var(--fhd-color); font-weight:600;">عذراً، لا توجد روابط متوفرة لهذه القناة حالياً.</p>';
+    }
+
     qualityModal.classList.add('show');
-    // تركيز على الزر الأول في مربع الجودة ليتم التحكم به بالريموت
-    setTimeout(() => firstQualityButton?.focus(), 50);
   }
 
   function hideQualityModal() {
@@ -597,7 +708,9 @@
     selectedChannelForQuality = null;
   }
 
+  // إخفاء المودال عند النقر على زر الإلغاء
   cancelQualityBtn.addEventListener('click', hideQualityModal);
+  // إخفاء المودال عند النقر خارج المحتوى
   qualityModal.addEventListener('click', (e) => {
     if (e.target === qualityModal) {
       hideQualityModal();
@@ -605,18 +718,31 @@
   });
 
 
+  // bigPlay: resume last or first (يستخدم الرابط الأخير المحفوظ إذا كان متوفراً)
   bigPlay.addEventListener('click', ()=>{
-    const ch = last ? channels.find(c=>c.id===last.id) : channels[0];
-    if (ch) {
+    // محاولة إيجاد القناة الأخيرة، وإلا القناة الأولى غير Soon
+    const ch = last ? allChannels.find(c=>c.id===last.id) : allChannels.find(c => c.category !== 'Soon');
+
+    if (ch && ch.category !== 'Soon') {
+        document.querySelectorAll('.channel').forEach(c=>c.classList.remove('active'));
         document.querySelector(`.channel[data-id="${ch.id}"]`)?.classList.add('active');
+        
         if (last && last.lastUrl) {
+            // تشغيل مباشر بالرابط الأخير المحفوظ
             playChannel(ch, last.lastUrl, last.lastQuality || 'غير محدد');
         } else {
+             // إظهار مربع الجودة إذا لم يكن هناك تشغيل سابق محفوظ
             showQualityModal(ch);
         }
+    } else if (ch) {
+        // إذا كانت القناة الأخيرة هي Soon أو لم يتم العثور على قناة متاحة
+        currentTitle.textContent = 'اختَر قناة لتشغيلها';
+        currentNumber.textContent = '';
+        bigPlay.style.display = 'flex';
     }
   });
 
+  // hide spinner when video/iframe loaded
   video.addEventListener('playing', ()=> spinner.classList.remove('show'));
   video.addEventListener('loadeddata', ()=> spinner.classList.remove('show'));
   iframe.addEventListener('load', ()=> spinner.classList.remove('show'));
@@ -633,8 +759,6 @@
     bigPlay.style.display = 'flex';
     document.querySelectorAll('.channel').forEach(c=>c.classList.remove('active'));
     try { if (document.fullscreenElement) document.exitFullscreen(); } catch(e){}
-    // العودة للتركيز على أول قناة في القائمة بعد الإيقاف (لجهاز التحكم عن بعد)
-    if (window.innerWidth > 980) document.querySelector('.channel')?.focus();
   }
 
 
@@ -643,84 +767,34 @@
     currentTitle.textContent = last.name;
     currentNumber.textContent = ' | ' + last.id;
     bigPlay.style.display = 'flex';
-    const lastChannelEl = document.querySelector(`.channel[data-id="${last.id}"]`);
-    if(lastChannelEl) lastChannelEl.classList.add('active');
+    document.querySelector(`.channel[data-id="${last.id}"]`)?.classList.add('active');
   }
 
-  // ********** تحكم الريموت/لوحة المفاتيح (مُحسّن لنمط التلفزيون) **********
+  // keyboard & accessibility (تغيير التنقل ليكون أفقيًا بالسهام اليمنى واليسرى)
   document.addEventListener('keydown', (e)=>{
-    // 1. التنقل داخل مربع الجودة (Modal)
-    if (qualityModal.classList.contains('show')) {
-        const modalFocusable = Array.from(qualityOptionsEl.querySelectorAll('.quality-option')).concat(cancelQualityBtn);
-        const modalIdx = modalFocusable.indexOf(document.activeElement);
-        
-        if (e.key === 'ArrowDown'){ 
-            e.preventDefault(); 
-            const next = modalFocusable[modalIdx+1] || modalFocusable[0]; 
-            next.focus(); 
-        }
-        else if (e.key === 'ArrowUp'){ 
-            e.preventDefault(); 
-            const prev = modalFocusable[modalIdx-1] || modalFocusable[modalFocusable.length-1]; 
-            prev.focus(); 
-        }
-        else if (e.key === 'Enter' && document.activeElement.tagName === 'BUTTON') { 
-            document.activeElement.click(); 
-        }
-        else if (e.key === 'Escape') {
-             hideQualityModal();
-        }
-        return; 
-    }
+    if (qualityModal.classList.contains('show')) return; 
 
-    const focusable = Array.from(document.querySelectorAll('.channel'));
+    const focusable = Array.from(document.querySelectorAll('.channel:not(.soon)')); 
     const idx = focusable.indexOf(document.activeElement);
-    
-    // 2. التنقل في القائمة العمودية (Up/Down)
-    if (e.key === 'ArrowDown'){ 
+    if (e.key === 'ArrowRight'){ 
         e.preventDefault(); 
         const next = focusable[idx+1] || focusable[0]; 
-        next.focus(); 
-        next.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        if(next) next.focus(); 
     }
-    else if (e.key === 'ArrowUp'){ 
+    else if (e.key === 'ArrowLeft'){ 
         e.preventDefault(); 
         const prev = focusable[idx-1] || focusable[focusable.length-1]; 
-        prev.focus(); 
-        prev.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        if(prev) prev.focus(); 
     }
-    
-    // 3. مفتاح التشغيل (Enter)
-    if (e.key === 'Enter' && document.activeElement.classList.contains('channel')) {
-      document.activeElement.click();
-    }
-    
-    // 4. التنقل بين القائمة والمشغل (Left/Right) - نمط التلفزيون فقط
-    if (window.innerWidth > 980) {
-        if (e.key === 'ArrowLeft'){ // من القائمة (يمين) إلى المشغل (يسار)
-            e.preventDefault(); 
-            if (document.activeElement.classList.contains('channel')) {
-                // التركيز على زر الإيقاف في شريط التحكم إذا كان مرئياً
-                if(btnStop.style.display !== 'none') btnStop.focus();
-            }
-        }
-        else if (e.key === 'ArrowRight'){ // من المشغل (يسار) إلى القائمة (يمين)
-            e.preventDefault();
-            if (document.activeElement.id === 'btnStop' || document.activeElement.id === 'bigPlay') {
-                focusable[0]?.focus(); // التركيز على أول قناة
-            }
-        }
-    }
-    // 5. مفتاح العودة (Escape)
-    if (e.key === 'Escape') {
-        e.preventDefault();
-        stopPlayer();
-    }
+    else if (e.key === 'Enter' && document.activeElement.classList.contains('channel')) document.activeElement.click();
   });
 
-  window.addEventListener('resize', ()=> { 
-    if (window.innerWidth > 980) mobileMini.style.display = 'none'; 
-  });
+  window.addEventListener('resize', ()=> { if (window.innerWidth > 1064) mobileMini.style.display = 'none'; });
+
+  // initialize UI
+  if (allChannels.length > 0) {
+    renderList();
+  }
 
 </script>
 </body>
