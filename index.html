@@ -1,1 +1,66 @@
-Bad service 
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مشغل بث مع شعار</title>
+<style>
+  body {
+    margin: 0;
+    background-color: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  .player-container {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    height: 100vh;
+    background: #000;
+    overflow: hidden;
+  }
+
+  video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* يحافظ على الأبعاد الصحيحة للبث */
+    background: #000;
+  }
+
+  .logo {
+    position: absolute;
+    top: 15px;     /* المسافة من الأعلى */
+    right: 15px;   /* يمكن تغييرها إلى left إذا أردت */
+    width: 100px;  /* حجم الشعار */
+    opacity: 0.85; /* شفافية الشعار */
+    z-index: 10;
+  }
+
+  /* تحسين عرض الشعار على الجوال */
+  @media (max-width: 600px) {
+    .logo {
+      width: 70px;
+      top: 10px;
+      right: 10px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="player-container">
+  <!-- الشعار -->
+  <img src="logo.png" alt="شعار القناة" class="logo">
+
+  <!-- مشغل البث -->
+  <video id="player" controls autoplay playsinline>
+    <source src="https://your-stream-link.m3u8" type="application/x-mpegURL">
+    متصفحك لا يدعم تشغيل الفيديو.
+  </video>
+</div>
+
+</body>
+</html> 
