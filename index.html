@@ -42,77 +42,89 @@
       min-height: 100dvh; 
       overflow-x: hidden;
     }
+    
+    /* النمط الأساسي (افتراضي للأجهزة اللوحية/المتوسطة) */
     .app { 
       max-width:1024px; 
       margin:10px auto; 
       display:grid; 
-      /* الحفاظ على نمط الشبكة الأصلي (المشغل والقائمة الجانبية) */
-      grid-template-columns: minmax(300px, 1fr) 380px; 
+      grid-template-columns: minmax(300px, 1fr) 380px; /* مشغل + قائمة جانبية (عمودية) */
       gap:24px; 
       align-items:start;
     }
     
-    /* ****************************************************** */
-    /* التعديل لنمط التلفزيون (الشاشات الكبيرة) - القائمة أفقية */
-    /* ****************************************************** */
+    /* ---------------------------------------------------------------------- */
+    /* ************* التعديل هنا: لنمط الهاتف (أصغر من 981 بكسل) ************* */
+    /* ---------------------------------------------------------------------- */
+    @media (max-width:980px){ 
+      .app{
+        grid-template-columns:1fr; /* المشغل في الأعلى والقائمة في الأسفل */
+        padding: 0; 
+      } 
+      .player{order:-1} /* لضمان أن المشغل يأتي أولاً في شاشات الهاتف */
+      .list {
+        margin: 20px;
+        border-radius: var(--radius);
+        /* القائمة عمودية (افتراضية) */
+        box-shadow:0 8px 30px rgba(0,0,0,0.4); 
+        background: var(--panel);
+      }
+      .channels { 
+        flex-direction:column; /* القنوات فوق بعضها البعض */
+        max-height:70vh; 
+        overflow:auto; 
+      }
+    }
+
+    /* -------------------------------------------------------------------- */
+    /* ************* التعديل لنمط التلفزيون (أكبر من 980 بكسل) ************* */
+    /* -------------------------------------------------------------------- */
     @media (min-width: 981px) {
         .app {
-            /* تعديل هيكل الشبكة ليكون المشغل في الأعلى والقائمة في الأسفل */
-            grid-template-columns: 1fr;
-            max-width: 1400px; /* زيادة أقصى عرض قليلاً ليناسب شاشات التلفزيون */
+            grid-template-columns: 1fr; /* المشغل في الأعلى والقائمة الأفقية في الأسفل */
+            max-width: 1400px; /* توسيع العرض قليلاً */
         }
         
         .list {
-            /* إلغاء الـ box-shadow وتدوير الحواف لنمط أكثر انفتاحاً */
+            order: 2; /* تأكد من أنها تأتي بعد المشغل */
             box-shadow: none; 
             border-radius: 0;
-            background: transparent; /* جعل خلفية القائمة شفافة لتمتزج مع خلفية الـ body */
-            margin: 0 -20px -20px; /* ملء العرض من الحواف */
+            background: transparent; 
+            margin: 0 -20px -20px; 
         }
 
         .list .header { 
-            /* إزالة الفصل بين الرأس والقنوات */
             border-bottom: none; 
             padding: 16px 20px 0; 
         }
 
         .channels { 
-            /* التغيير الرئيسي: عرض أفقي (جانبي) */
-            flex-direction: row; 
-            overflow-x: auto; /* تفعيل السحب الأفقي */
-            overflow-y: hidden; /* إخفاء سحب Y */
-            max-height: 150px; /* تقييد الارتفاع للنمط الأفقي */
+            /* التعديل الرئيسي: استخدام فليكس أفقي */
+            display: flex; /* إعادة التأكيد */
+            flex-direction: row; /* القنوات جنبًا إلى جنب */
+            gap: 15px; /* زيادة الفراغ بين القنوات قليلاً */
+            overflow-x: auto; 
+            overflow-y: hidden;
+            max-height: 150px; 
             padding: 16px 20px 24px;
             scroll-behavior: smooth;
+            /* إضافة شريط تمرير أنيق لشاشات التلفزيون */
+            padding-bottom: 24px; /* لترك مساحة للشريط إذا ظهر */
         }
 
         .channel {
-            /* الحفاظ على حجم منطقي للأفقي وتثبيت العرض */
-            min-width: 280px; /* تحديد عرض ثابت للقناة */
-            flex-shrink: 0; /* منع تقلص القناة عند عدم وجود مساحة كافية */
-            background: var(--panel); /* إعادة تطبيق الخلفية هنا */
-            border: 2px solid transparent;
+            min-width: 300px; /* تحديد عرض ثابت (أكبر قليلاً) */
+            flex-shrink: 0; 
+            background: var(--panel); 
             box-shadow:0 4px 10px rgba(0,0,0,0.4);
         }
-        .channel:hover{ transform:translateY(0) scale(1.02); }
-        .channel.active { transform: scale(1.02); } /* تأثير بسيط للقناة النشطة */
+        .channel:hover{ 
+          transform:translateY(-2px) scale(1.01); 
+          box-shadow:0 8px 20px rgba(0,0,0,0.6);
+        }
     }
-    /* ****************************************************** */
+    /* ---------------------------------------------------------------------- */
     
-    @media (max-width:980px){ 
-      .app{
-        grid-template-columns:1fr;
-        /* تقليل الحشو على الشاشات الصغيرة */
-        padding: 0; 
-      } 
-      .player{order:-1} 
-      .list {
-        /* إرجاع الحشو بعد إزالته من الجسم ليتم تفعيله هنا فقط */
-        margin: 20px;
-        border-radius: var(--radius);
-      }
-    }
-
     .player { 
       background: var(--panel); 
       border-radius:var(--radius); 
@@ -127,7 +139,7 @@
       .player {
         margin: 0 auto;
         border-radius: var(--radius);
-        max-width: 1024px; /* تحديد أقصى عرض للمشغل على الشاشات الكبيرة */
+        max-width: 1024px; 
       }
     }
 
@@ -654,13 +666,35 @@
     // تعديل حركة الأسهم ليناسب النمط الأفقي على الشاشات الكبيرة
     if (window.innerWidth > 980) {
         // إذا كانت الشاشة كبيرة (نمط التلفزيون/أفقي):
-        if (e.key === 'ArrowRight'){ e.preventDefault(); const next = focusable[idx+1] || focusable[0]; next.focus(); }
-        else if (e.key === 'ArrowLeft'){ e.preventDefault(); const prev = focusable[idx-1] || focusable[focusable.length-1]; prev.focus(); }
-        // استخدام ArrowUp/ArrowDown للتمرير (scroll) الأفقي
-        else if (e.key === 'ArrowDown' || e.key === 'ArrowUp'){ 
-             const scrollAmount = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 300 : -300;
-             listEl.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        if (e.key === 'ArrowRight'){ 
+          e.preventDefault(); 
+          const next = focusable[idx+1] || focusable[0]; next.focus(); 
+          // تمرير القائمة لجعل العنصر المراد التركيز عليه مرئياً
+          next.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         }
+        else if (e.key === 'ArrowLeft'){ 
+          e.preventDefault(); 
+          const prev = focusable[idx-1] || focusable[focusable.length-1]; prev.focus(); 
+          // تمرير القائمة لجعل العنصر المراد التركيز عليه مرئياً
+          prev.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+        // يمكن استخدام السهمين لأعلى/لأسفل للوصول إلى المشغل إذا كنت تستخدم ريموت تي في
+        else if (e.key === 'ArrowUp'){ 
+             e.preventDefault(); 
+             // التركيز على زر التشغيل الكبير إذا كان مرئياً
+             if(bigPlay.style.display === 'flex' || bigPlay.style.display === ''){
+                bigPlay.focus();
+             } else {
+                // أو التركيز على زر الإيقاف في شريط التحكم إذا كان المشغل فعالاً
+                btnStop.focus();
+             }
+        }
+        // إذا كان المشغل فعالاً، فإن السهم لأسفل يعيدك للقائمة
+        else if (e.key === 'ArrowDown'){
+            e.preventDefault();
+            focusable[0]?.focus(); // التركيز على أول قناة
+        }
+
     } else {
         // إذا كانت الشاشة صغيرة (نمط الهاتف/عمودي):
         if (e.key === 'ArrowDown'){ e.preventDefault(); const next = focusable[idx+1] || focusable[0]; next.focus(); }
@@ -673,8 +707,6 @@
 
   window.addEventListener('resize', ()=> { 
     if (window.innerWidth > 980) mobileMini.style.display = 'none'; 
-    // إذا كان العرض يمر بالعتبة 980، قم بإعادة رسم القائمة لضمان تطبيق الأنماط الصحيحة
-    // renderList(); // ليس ضرورياً إذا كان التعديل في CSS فقط
   });
 
   // initialize UI
