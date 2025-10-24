@@ -42,89 +42,31 @@
       min-height: 100dvh; 
       overflow-x: hidden;
     }
-    
-    /* النمط الأساسي (افتراضي للأجهزة اللوحية/المتوسطة) */
     .app { 
       max-width:1024px; 
       margin:10px auto; 
       display:grid; 
-      grid-template-columns: minmax(300px, 1fr) 380px; /* مشغل + قائمة جانبية (عمودية) */
+      /* التعديل الرئيسي: عكس ترتيب الأعمدة */
+      /* القائمة (380px) على اليمين، والمشغل (1fr) على اليسار */
+      grid-template-columns: 380px minmax(300px, 1fr); 
       gap:24px; 
       align-items:start;
     }
     
-    /* ---------------------------------------------------------------------- */
-    /* ************* التعديل هنا: لنمط الهاتف (أصغر من 981 بكسل) ************* */
-    /* ---------------------------------------------------------------------- */
+    /* عند الشاشات الصغيرة: نعود لعمود واحد، ولكن يجب عكس ترتيب العناصر لضمان ظهور المشغل أولاً */
     @media (max-width:980px){ 
       .app{
-        grid-template-columns:1fr; /* المشغل في الأعلى والقائمة في الأسفل */
+        grid-template-columns:1fr;
         padding: 0; 
       } 
-      .player{order:-1} /* لضمان أن المشغل يأتي أولاً في شاشات الهاتف */
+      /* المشغل (الذي سيصبح العنصر الثاني في HTML) يجب أن يأتي أولاً */
+      .player{order:-1} 
       .list {
         margin: 20px;
         border-radius: var(--radius);
-        /* القائمة عمودية (افتراضية) */
-        box-shadow:0 8px 30px rgba(0,0,0,0.4); 
-        background: var(--panel);
-      }
-      .channels { 
-        flex-direction:column; /* القنوات فوق بعضها البعض */
-        max-height:70vh; 
-        overflow:auto; 
       }
     }
 
-    /* -------------------------------------------------------------------- */
-    /* ************* التعديل لنمط التلفزيون (أكبر من 980 بكسل) ************* */
-    /* -------------------------------------------------------------------- */
-    @media (min-width: 981px) {
-        .app {
-            grid-template-columns: 1fr; /* المشغل في الأعلى والقائمة الأفقية في الأسفل */
-            max-width: 1400px; /* توسيع العرض قليلاً */
-        }
-        
-        .list {
-            order: 2; /* تأكد من أنها تأتي بعد المشغل */
-            box-shadow: none; 
-            border-radius: 0;
-            background: transparent; 
-            margin: 0 -20px -20px; 
-        }
-
-        .list .header { 
-            border-bottom: none; 
-            padding: 16px 20px 0; 
-        }
-
-        .channels { 
-            /* التعديل الرئيسي: استخدام فليكس أفقي */
-            display: flex; /* إعادة التأكيد */
-            flex-direction: row; /* القنوات جنبًا إلى جنب */
-            gap: 15px; /* زيادة الفراغ بين القنوات قليلاً */
-            overflow-x: auto; 
-            overflow-y: hidden;
-            max-height: 150px; 
-            padding: 16px 20px 24px;
-            scroll-behavior: smooth;
-            /* إضافة شريط تمرير أنيق لشاشات التلفزيون */
-            padding-bottom: 24px; /* لترك مساحة للشريط إذا ظهر */
-        }
-
-        .channel {
-            min-width: 300px; /* تحديد عرض ثابت (أكبر قليلاً) */
-            flex-shrink: 0; 
-            background: var(--panel); 
-            box-shadow:0 4px 10px rgba(0,0,0,0.4);
-        }
-        .channel:hover{ 
-          transform:translateY(-2px) scale(1.01); 
-          box-shadow:0 8px 20px rgba(0,0,0,0.6);
-        }
-    }
-    /* ---------------------------------------------------------------------- */
-    
     .player { 
       background: var(--panel); 
       border-radius:var(--radius); 
@@ -134,12 +76,13 @@
       /* إزالة الحدود على الشاشات الصغيرة لملء العرض */
       margin: -20px -20px 0;
       border-radius: 0;
+      /* لجعله يأخذ كامل المساحة المتبقية على الشاشات الكبيرة */
+      grid-column: 2 / 3;
     }
     @media (min-width:981px){
       .player {
-        margin: 0 auto;
+        margin: 0;
         border-radius: var(--radius);
-        max-width: 1024px; 
       }
     }
 
@@ -176,15 +119,33 @@
     @keyframes spin{ from{ transform:translate(-50%,-50%) rotate(0) } to{ transform:translate(-50%,-50%) rotate(360deg) } }
     .spinner svg circle { stroke:var(--accent); stroke-dasharray:31.4 31.4; }
 
-    .list { background: var(--panel); border-radius:var(--radius); overflow:hidden; box-shadow:0 8px 30px rgba(0,0,0,0.4); }
-    
+    .list { 
+        background: var(--panel); 
+        border-radius:var(--radius); 
+        overflow:hidden; 
+        box-shadow:0 8px 30px rgba(0,0,0,0.4); 
+        /* لجعله يأخذ العمود الأول (الأيمن) على الشاشات الكبيرة */
+        grid-column: 1 / 2;
+    }
+    @media (max-width:980px){
+      .list {
+        margin: 20px;
+        border-radius: var(--radius);
+      }
+    }
     .list .header { padding:16px 20px; display:flex; align-items:center; gap:10px; border-bottom:1px solid rgba(255,255,255,0.05); }
     .list h2{ margin:0; font-size:18px; font-weight:700; color:var(--accent) }
     .list .count { margin-right:auto; color:var(--muted); font-size:14px; }
 
-    /* القائمة العمودية الافتراضية للهواتف والشاشات الأصغر */
-    .channels { display:flex; flex-direction:column; gap:10px; padding:16px; max-height:70vh; overflow:auto; }
-    
+    .channels { 
+      /* القائمة العمودية الافتراضية - تم حذف الأنماط الأفقية */
+      display:flex; 
+      flex-direction:column; 
+      gap:10px; 
+      padding:16px; 
+      max-height:70vh; 
+      overflow:auto; 
+    }
     .channel { background:rgba(255,255,255,0.03); padding:16px; border-radius:12px; display:flex; gap:14px; align-items:center; transition: transform .2s ease, background .2s; cursor:pointer; border:2px solid transparent; }
     .channel:hover{ transform:translateY(-3px); box-shadow:0 8px 20px rgba(0,0,0,0.4); background:rgba(255,255,255,0.05); }
     .channel.active { border-color:var(--accent); background:rgba(0,204,153,0.1); }
@@ -298,6 +259,16 @@
 </head>
 <body>
   <div class="app fade-in">
+    
+    <div class="list fade-in" style="animation-delay:.08s">
+      <div class="header">
+        <h2>قائمة القنوات</h2>
+        <div class="count" id="countTxt">12 قناة</div>
+      </div>
+
+      <div class="channels" id="channelsList"></div>
+    </div>
+    
     <div class="player" id="playerWrap">
       <div class="meta">
         <div style="display:flex;align-items:center;gap:12px">
@@ -328,14 +299,6 @@
       </div>
     </div>
 
-    <div class="list fade-in" style="animation-delay:.08s">
-      <div class="header">
-        <h2>قائمة القنوات</h2>
-        <div class="count" id="countTxt">12 قناة</div>
-      </div>
-
-      <div class="channels" id="channelsList"></div>
-    </div>
   </div>
 
   <div class="mobile-player-mini" id="mobileMini" style="display:none">
@@ -663,46 +626,39 @@
     const focusable = Array.from(document.querySelectorAll('.channel'));
     const idx = focusable.indexOf(document.activeElement);
     
-    // تعديل حركة الأسهم ليناسب النمط الأفقي على الشاشات الكبيرة
-    if (window.innerWidth > 980) {
-        // إذا كانت الشاشة كبيرة (نمط التلفزيون/أفقي):
-        if (e.key === 'ArrowRight'){ 
-          e.preventDefault(); 
-          const next = focusable[idx+1] || focusable[0]; next.focus(); 
-          // تمرير القائمة لجعل العنصر المراد التركيز عليه مرئياً
-          next.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-        }
-        else if (e.key === 'ArrowLeft'){ 
-          e.preventDefault(); 
-          const prev = focusable[idx-1] || focusable[focusable.length-1]; prev.focus(); 
-          // تمرير القائمة لجعل العنصر المراد التركيز عليه مرئياً
-          prev.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-        }
-        // يمكن استخدام السهمين لأعلى/لأسفل للوصول إلى المشغل إذا كنت تستخدم ريموت تي في
-        else if (e.key === 'ArrowUp'){ 
-             e.preventDefault(); 
-             // التركيز على زر التشغيل الكبير إذا كان مرئياً
-             if(bigPlay.style.display === 'flex' || bigPlay.style.display === ''){
-                bigPlay.focus();
-             } else {
-                // أو التركيز على زر الإيقاف في شريط التحكم إذا كان المشغل فعالاً
-                btnStop.focus();
-             }
-        }
-        // إذا كان المشغل فعالاً، فإن السهم لأسفل يعيدك للقائمة
-        else if (e.key === 'ArrowDown'){
-            e.preventDefault();
-            focusable[0]?.focus(); // التركيز على أول قناة
-        }
-
-    } else {
-        // إذا كانت الشاشة صغيرة (نمط الهاتف/عمودي):
-        if (e.key === 'ArrowDown'){ e.preventDefault(); const next = focusable[idx+1] || focusable[0]; next.focus(); }
-        else if (e.key === 'ArrowUp'){ e.preventDefault(); const prev = focusable[idx-1] || focusable[focusable.length-1]; prev.focus(); }
+    // الحركة العمودية (للهاتف والشاشات الكبيرة/التلفزيون)
+    if (e.key === 'ArrowDown'){ 
+        e.preventDefault(); 
+        const next = focusable[idx+1] || focusable[0]; 
+        next.focus(); 
+        next.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    else if (e.key === 'ArrowUp'){ 
+        e.preventDefault(); 
+        const prev = focusable[idx-1] || focusable[focusable.length-1]; 
+        prev.focus(); 
+        prev.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
     
     // مفتاح التشغيل (Enter) يعمل في كلتا الحالتين
     if (e.key === 'Enter' && document.activeElement.classList.contains('channel')) document.activeElement.click();
+    
+    // *إضافة دعم التنقل بين المشغل والقائمة باستخدام الأسهم الأفقية على الشاشات الكبيرة*
+    if (window.innerWidth > 980) {
+        if (e.key === 'ArrowLeft'){ // الانتقال من القناة إلى المشغل (يسار)
+            e.preventDefault(); 
+            if (document.activeElement.classList.contains('channel')) {
+                // التركيز على زر الإيقاف في المشغل أو زر التشغيل الكبير
+                btnStop.focus(); 
+            }
+        }
+        else if (e.key === 'ArrowRight'){ // الانتقال من المشغل إلى القائمة (يمين)
+            e.preventDefault();
+            if (document.activeElement.id === 'btnStop' || document.activeElement.id === 'bigPlay') {
+                focusable[0]?.focus(); // التركيز على أول قناة
+            }
+        }
+    }
   });
 
   window.addEventListener('resize', ()=> { 
