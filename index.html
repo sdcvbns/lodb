@@ -2,183 +2,212 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>قنوات Bein Sport</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>إدارة IPTV | سرمد</title>
     <style>
-        /* ألوان هادئة ومريحة */
-        :root {
-            --bg-soft: #eef1f5; /* خلفية ناعمة */
-            --card-soft: #ffffff; /* لون بطاقة بيضاء */
-            --text-primary: #34495e; /* نص داكن هادئ */
-            --accent-blue: #4A69BD; /* لون التمييز الهادئ */
-            --shadow-deep: 0 10px 30px rgba(0, 0, 0, 0.15); 
-            --success-light: #2ecc71;
-        }
-        
-        /* حركات أنيميشن جديدة */
-        @keyframes slideInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes highlightPulse {
-            0% { box-shadow: 0 0 0 0 rgba(74, 105, 189, 0.7); }
-            70% { box-shadow: 0 0 0 15px rgba(74, 105, 189, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(74, 105, 189, 0); }
+        :root { 
+            --accent: #00f2fe; 
+            --bg: #0f172a; 
+            --card-glass: rgba(255, 255, 255, 0.05);
+            --border-glass: rgba(255, 255, 255, 0.1);
         }
 
         body { 
-            font-family: 'Cairo', sans-serif; 
-            background: var(--bg-soft); 
-            color: var(--text-primary); 
-            text-align: center; 
-            padding: 20px; 
-            direction: rtl; 
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-sizing: border-box;
-        }
-
-        .container { 
-            max-width: 500px; 
-            width: 100%;
-            padding: 30px; 
-            background: var(--card-soft); 
-            border-radius: 20px; 
-            box-shadow: var(--shadow-deep); 
-            animation: slideInUp 0.8s ease-out;
-            box-sizing: border-box;
-        }
-        
-        h1 { 
-            color: var(--accent-blue); 
-            margin-bottom: 30px; 
-            font-size: 2rem;
-            border-bottom: 3px solid var(--accent-blue);
-            padding-bottom: 10px;
-            display: inline-block;
-            font-weight: 700;
-        }
-        
-        .channel-list { 
+            margin: 0; 
+            background: var(--bg); 
+            color: white; 
+            font-family: system-ui, -apple-system, sans-serif; 
             display: flex; 
             flex-direction: column; 
-            gap: 15px; 
-            margin-top: 20px;
-        }
-        
-        /* تصميم القالب الجميل للقناة */
-        .channel-link {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--accent-blue); 
-            color: white; 
-            padding: 18px 25px; 
-            border-radius: 12px; 
-            text-decoration: none; 
-            font-size: 1.2rem; 
-            font-weight: 600; 
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1); 
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            border-bottom: 4px solid #3757a3;
-            position: relative;
-            overflow: hidden;
-            opacity: 0;
-            animation: slideInUp 0.6s forwards;
+            align-items: center; 
+            padding: 20px;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .channel-link::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            left: 0;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1) 50%, transparent);
-            transform: translateX(-100%);
-            transition: transform 0.5s;
+        /* تحسين البطاقة بنمط Android 16 */
+        .card { 
+            background: var(--card-glass); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px); 
+            border: 1px solid var(--border-glass); 
+            border-radius: 30px; 
+            padding: 30px; 
+            width: 100%; 
+            max-width: 420px; 
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease;
         }
 
-        .channel-link:hover::before {
-            transform: translateX(100%);
-        }
-        
-        .channel-link:hover { 
-            transform: translateY(-3px); 
-            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2), 0 0 20px var(--success-light);
-            border-bottom-color: var(--success-light);
-        }
-        
-        .channel-link:active { 
-            transform: translateY(1px); 
-            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-            border-bottom-width: 2px;
-        }
-        
-        .channel-icon {
-            font-size: 1.5rem;
-            transition: transform 0.3s;
-        }
-        
-        .channel-link:hover .channel-icon {
-            transform: scale(1.1) rotate(5deg);
-        }
-        
-        .note {
-            margin-top: 40px; 
-            font-size: 0.95rem; 
-            color: #7f8c8d;
-            padding: 10px;
-            border-top: 1px dashed #ccc;
-            animation: fadeIn 1s forwards 0.5s;
-            opacity: 0;
+        h3 { 
+            font-weight: 500; 
+            letter-spacing: -0.5px; 
+            margin-top: 0;
+            color: var(--accent);
         }
 
-        @media (max-width: 600px) { 
-            body { align-items: flex-start; }
-            .container { margin: 20px auto; padding: 20px; }
-            .channel-link { padding: 15px 20px; font-size: 1.1rem; }
-            h1 { font-size: 1.6rem; margin-bottom: 20px; }
-        }
+        .tabs { display: flex; gap: 10px; margin-bottom: 25px; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 18px; }
         
-        /* يجب إضافة خاصية fadeIn من الكود الأصلي ليعمل الـ animation-delay بشكل صحيح */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        /* أزرار التبويب بحركة مرنة */
+        .tab-btn { 
+            flex: 1; padding: 12px; border-radius: 14px; border: none;
+            background: transparent; color: white; cursor: pointer; 
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500; font-size: 0.9rem;
         }
+        .tab-btn.active { background: var(--accent); color: #000; box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3); }
+
+        /* مدخلات النص بحواف ناعمة */
+        input, select { 
+            width: 100%; padding: 16px; margin: 10px 0; border-radius: 16px; 
+            border: 1px solid var(--border-glass); 
+            background: rgba(0, 0, 0, 0.3); color: #fff; 
+            box-sizing: border-box; outline: none; 
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+        input:focus { border-color: var(--accent); background: rgba(0,0,0,0.5); transform: translateY(-2px); }
+
+        /* زر الإضافة بحركة الضغط */
+        #mainAdd { 
+            width: 100%; padding: 18px; border-radius: 18px; border: none; 
+            background: var(--accent); color: #000; font-weight: 700; 
+            cursor: pointer; margin-top: 15px; 
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 20px rgba(0, 242, 254, 0.2);
+        }
+        #mainAdd:active { transform: scale(0.95); box-shadow: 0 5px 10px rgba(0, 242, 254, 0.1); }
+
+        /* حاوية القائمة */
+        .list-container { width: 100%; max-width: 420px; margin-top: 30px; }
+
+        /* عناصر القائمة بحركات ظهور انسيابية */
+        .list-item { 
+            background: rgba(255, 255, 255, 0.03); 
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px; padding: 18px; margin-bottom: 15px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            border-right: 5px solid var(--accent); 
+            animation: slideUp 0.5s ease forwards;
+        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .item-info b { color: var(--accent); font-size: 1rem; display: block; margin-bottom: 4px; }
+        .item-info p { margin: 0; font-size: 0.8rem; opacity: 0.6; }
+
+        /* أزرار الإجراءات الصغيرة */
+        .btn-mini { 
+            padding: 10px 16px; border-radius: 12px; border: none; 
+            font-size: 0.75rem; cursor: pointer; font-weight: 600; 
+            transition: all 0.2s ease;
+        }
+        .btn-mini:active { transform: scale(0.9); }
+
+        #msg { margin-top: 15px; font-size: 0.85rem; font-weight: 500; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>قنوات <span style="color: var(--success-light);">Bein Sport</span></h1>
-        <div class="channel-list">
-            <a href="https://stream.supertv.gg:3001/supertv/sport/stv1/ch1/adaptive.m3u8" target="_self" class="channel-link" style="animation-delay: 0s;">
-                <span class="channel-name">قناة 1</span>
-                <span class="channel-icon">📺</span>
-            </a>
-            <a href="https://stream.supertv.gg:3002/supertv/sport/stv2/ch2/adaptive.m3u8" target="_self" class="channel-link" style="animation-delay: 0.1s;">
-                <span class="channel-name">قناة 2</span>
-                <span class="channel-icon">📺</span>
-            </a>
-            <a href="https://stream.supertv.gg:3003/supertv/sport/stv3/ch3/adaptive.m3u8" target="_self" class="channel-link" style="animation-delay: 0.2s;">
-                <span class="channel-name">قناة 3</span>
-                <span class="channel-icon">📺</span>
-            </a>
-            <a href="https://stream.supertv.gg:3004/supertv/sport/stv4/ch4/adaptive.m3u8" target="_self" class="channel-link" style="animation-delay: 0.3s;">
-                <span class="channel-name">قناة 4</span>
-                <span class="channel-icon">📺</span>
-            </a>
-            <a href="https://stream.supertv.gg:3005/supertv/sport/stv5/ch5/adaptive.m3u8" target="_self" class="channel-link" style="animation-delay: 0.4s;">
-                <span class="channel-name">قناة 5</span>
-                <span class="channel-icon">📺</span>
-            </a>
+    <div class="card">
+        <h3>نظام الإدارة الذكي</h3>
+        <div class="tabs">
+            <button class="tab-btn active" id="xtBtn" onclick="switchTab('xtream')">Xtream</button>
+            <button class="tab-btn" id="m3uBtn" onclick="switchTab('m3u')">M3U Link</button>
         </div>
-        <p class="note">ملاحظة: القنوات تعمل في حال وجود حدث رياضي. يرجى اختيار القناة.</p>
+        
+        <div id="xt-fields">
+            <input type="text" id="host" placeholder="رابط السيرفر">
+            <input type="text" id="user" placeholder="اليوزر">
+            <input type="text" id="pass" placeholder="الباسورد">
+        </div>
+        
+        <div id="m3u-fields" class="hidden">
+            <input type="text" id="m3u_name" placeholder="اسم القائمة">
+            <input type="text" id="m3u_url" placeholder="رابط M3U8">
+        </div>
+        
+        <select id="status">
+            <option value="active">تفعيل ✅</option>
+            <option value="expired">إيقاف ❌</option>
+        </select>
+        
+        <button id="mainAdd" onclick="addNew()">حفظ ومزامنة البيانات</button>
+        <div id="msg"></div>
     </div>
+    
+    <div class="list-container" id="list"></div>
+
+<script>
+    const _0x4a1 = ["\x68\x74\x74\x70\x73\x3a\x2f\x2f\x73\x63\x72\x69\x70\x74\x2e\x67\x6f\x6f\x67\x6c\x65\x2e\x63\x6f\x6d\x2f\x6d\x61\x63\x72\x6f\x73\x2f\x73\x2f\x41\x4b\x66\x79\x63\x62\x7a\x37\x75\x4b\x31\x4d\x69\x36\x32\x49\x61\x4f\x4b\x54\x44\x31\x73\x75\x70\x35\x32\x79\x47\x71\x62\x38\x56\x33\x6e\x75\x5f\x62\x78\x6a\x68\x36\x77\x48\x46\x39\x35\x61\x4f\x65\x6c\x50\x78\x35\x4c\x65\x6e\x43\x4c\x57\x31\x51\x6e\x4f\x32\x75\x50\x58\x30\x32\x68\x79\x2f\x65\x78\x65\x63"];
+    const API = _0x4a1[0];
+    let subs = []; let mode = 'xtream';
+
+    window.onload = load;
+
+    function switchTab(m) {
+        mode = m;
+        document.getElementById('xtBtn').classList.toggle('active', m==='xtream');
+        document.getElementById('m3uBtn').classList.toggle('active', m==='m3u');
+        document.getElementById('xt-fields').classList.toggle('hidden', m!=='xtream');
+        document.getElementById('m3u-fields').classList.toggle('hidden', m!=='m3u');
+    }
+
+    async function load() {
+        try {
+            const res = await fetch(API);
+            subs = await res.json();
+            render();
+        } catch(e) { document.getElementById('list').innerHTML = "<p style='text-align:center'>خطأ في الاتصال</p>"; }
+    }
+
+    function render() {
+        const div = document.getElementById('list');
+        div.innerHTML = subs.length ? '' : '<p style="text-align:center; opacity:0.5;">لا يوجد بيانات</p>';
+        subs.forEach((s, i) => {
+            const item = document.createElement('div');
+            item.className = 'list-item';
+            if(s.status === 'expired') item.style.borderRightColor = '#ff4d4d';
+            item.innerHTML = `
+                <div class="item-info">
+                    <b>${s.type==='m3u'?s.name:s.user}</b>
+                    <p>${s.status==='active'?'نشط الآن ✅':'متوقف حالياً ❌'}</p>
+                </div>
+                <div>
+                    <button class="btn-mini" style="background:rgba(255,255,255,0.1); color:#fff" onclick="toggle(${i})">حالة</button>
+                    <button class="btn-mini" style="background:#ff4d4d;color:#fff" onclick="del(${i})">حذف</button>
+                </div>`;
+            div.appendChild(item);
+        });
+    }
+
+    async function sync() {
+        const msg = document.getElementById('msg');
+        msg.style.color = "var(--accent)";
+        msg.innerText = "جاري الحفظ بالسحابة...";
+        await fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(subs) });
+        setTimeout(() => { msg.innerText = "تم التحديث بنجاح ✅"; load(); }, 1200);
+    }
+
+    function addNew() {
+        let n = { status: document.getElementById('status').value, type: mode };
+        if(mode === 'xtream') { 
+            n.host = document.getElementById('host').value; 
+            n.user = document.getElementById('user').value; 
+            n.pass = document.getElementById('pass').value; 
+            if(!n.user || !n.host) return; 
+        } else { 
+            n.name = document.getElementById('m3u_name').value; 
+            n.url = document.getElementById('m3u_url').value; 
+            if(!n.url) return; 
+        }
+        subs.push(n); sync();
+        // تفريغ الحقول بعد الإضافة
+        document.querySelectorAll('input').forEach(i => i.value = "");
+    }
+
+    function del(i) { if(confirm("حذف نهائي؟")) { subs.splice(i,1); sync(); } }
+    function toggle(i) { subs[i].status = subs[i].status==='active'?'expired':'active'; sync(); }
+</script>
 </body>
 </html>
