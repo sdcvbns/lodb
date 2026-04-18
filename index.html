@@ -49,7 +49,7 @@
     <div class="list-container" id="list"></div>
 
 <script>
-    const API = "https://script.google.com/macros/s/AKfycbzGvXR8RL7p5l0AVFtE5LgIdRSbLh39GwqsxctCuq7WaRp8IoZLgk3yaF0bSF3YuLdW/exec";
+    const API = "https://script.google.com/macros/s/AKfycbzNhBMOQa9jCNngM8Gh70D4QPxjera2VqLsiH4wkytnDrqQSvIRIJHcaYn6fdQOeL6u/exec";
     let subs = []; let mode = 'xtream';
 
     window.onload = load;
@@ -66,7 +66,7 @@
             const res = await fetch(API);
             subs = await res.json();
             render();
-        } catch(e) { console.log(e); }
+        } catch(e) { console.error(e); }
     }
 
     function render() {
@@ -96,7 +96,7 @@
         if(confirm("هل أنت متأكد من مسح كافة البيانات؟")) {
             document.getElementById('msg').innerText = "جاري مسح الكل...";
             await fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify({action: "clear_all"}) });
-            setTimeout(load, 2000);
+            setTimeout(() => { load(); document.getElementById('msg').innerText = "تم المسح ✅"; }, 2000);
         }
     }
 
@@ -132,7 +132,7 @@
         reader.readAsText(file);
     }
 
-    function del(i) { subs.splice(i,1); sync(); }
+    function del(i) { if(confirm("حذف هذا العنصر؟")) { subs.splice(i,1); sync(); } }
     function toggle(i) { subs[i].status = subs[i].status==='active'?'expired':'active'; sync(); }
 </script>
 </body>
