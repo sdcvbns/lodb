@@ -2,67 +2,131 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>إدارة IPTV | سرمد</title>
     <style>
-        :root { --accent: #00f2fe; --bg: #0f172a; --card-glass: rgba(255, 255, 255, 0.05); }
-        body { margin: 0; background: var(--bg); color: white; font-family: system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .card { background: var(--card-glass); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; padding: 30px; width: 100%; max-width: 420px; text-align: center; }
-        input, select { width: 100%; padding: 16px; margin: 10px 0; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0, 0, 0, 0.3); color: #fff; outline: none; box-sizing: border-box; }
-        #mainAdd { width: 100%; padding: 18px; border-radius: 18px; border: none; background: var(--accent); color: #000; font-weight: 700; cursor: pointer; margin-top: 15px; }
-        .clear-btn { background: #ff4d4d; color: white; border: none; padding: 12px; border-radius: 15px; width: 100%; margin-top: 10px; cursor: pointer; font-weight: 600; }
-        .list-container { width: 100%; max-width: 420px; margin-top: 30px; }
-        .list-item { background: rgba(255, 255, 255, 0.03); border-radius: 20px; padding: 18px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; border-right: 5px solid var(--accent); animation: slideUp 0.5s ease; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .btn-mini { padding: 8px 12px; border-radius: 10px; border: none; font-size: 0.75rem; cursor: pointer; font-weight: 600; margin-left: 5px; }
+        :root { --accent: #00f2fe; --bg: #0f172a; }
+        body { margin: 0; background: var(--bg); color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; box-sizing: border-box; }
+        .card { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 25px; padding: 30px; width: 100%; max-width: 400px; text-align: center; margin-bottom: 20px; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: #000; color: #fff; box-sizing: border-box; outline: none; }
+        button { width: 100%; padding: 15px; border-radius: 12px; border: none; background: var(--accent); color: #000; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+        button:active { transform: scale(0.95); }
+        #msg { margin-top: 15px; font-size: 0.9rem; min-height: 1.2rem; }
+        .list-container { width: 100%; max-width: 400px; background: rgba(255,255,255,0.03); border-radius: 20px; padding: 15px; border: 1px solid rgba(255,255,255,0.05); }
+        .list-item { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-right: 4px solid var(--accent); }
+        .item-info { text-align: right; flex-grow: 1; margin-right: 10px; }
+        .item-info p { margin: 0; font-size: 0.8rem; opacity: 0.8; word-break: break-all; }
+        .item-info b { font-size: 0.9rem; color: var(--accent); }
+        .actions { display: flex; gap: 5px; }
+        .btn-mini { padding: 6px 10px; border-radius: 8px; border: none; font-size: 0.7rem; cursor: pointer; font-weight: bold; }
+        .btn-del { background: #ff4d4d; color: white; }
+        .btn-toggle { background: #00ff88; color: #000; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h3>نظام الإدارة - النسخة المستقرة</h3>
+        <h3>إضافة اشتراك جديد</h3>
         <input type="text" id="host" placeholder="رابط السيرفر">
-        <input type="text" id="user" placeholder="اليوزر">
-        <input type="text" id="pass" placeholder="الباسورد">
-        <select id="status"><option value="active">تفعيل ✅</option><option value="expired">إيقاف ❌</option></select>
-        <button id="mainAdd" onclick="addNew()">إضافة السيرفر وحفظ ✅</button>
-        <button class="clear-btn" onclick="clearAllData()">مسح القائمة 🗑️</button>
-        <div id="msg" style="margin-top:10px; color:var(--accent); font-size: 0.8rem;"></div>
+        <input type="text" id="user" placeholder="اسم المستخدم">
+        <input type="text" id="pass" placeholder="كلمة السر">
+        <select id="status">
+            <option value="active">تفعيل الخدمة ✅</option>
+            <option value="expired">إيقاف الخدمة ❌</option>
+        </select>
+        <button onclick="addNew()">إضافة للقائمة وحفظ ✅</button>
+        <div id="msg"></div>
     </div>
-    <div class="list-container" id="list"></div>
-<script>
-    const API = "https://script.google.com/macros/s/AKfycbwwTWuGaZ9JOvCeUDEGWIx8DKNds9DzF2qNYbTYMVQnseSFbjoWb26tfAMsZL1Sk4cs/exec";
-    let subs = [];
-    window.onload = load;
-    async function load() {
-        try { const res = await fetch(API); subs = await res.json(); render(); } catch(e) {}
-    }
-    function render() {
-        const div = document.getElementById('list'); div.innerHTML = '';
-        subs.forEach((s, i) => {
-            const item = document.createElement('div'); item.className = 'list-item';
-            if(s.status === 'expired') item.style.borderRightColor = '#ff4d4d';
-            item.innerHTML = `<div><b>${s.user}</b></div><div><button class="btn-mini" style="background:rgba(255,255,255,0.1);color:#fff" onclick="toggle(${i})">حالة</button><button class="btn-mini" style="background:#ff4d4d;color:#fff" onclick="del(${i})">حذف</button></div>`;
-            div.appendChild(item);
-        });
-    }
-    async function sync() {
-        document.getElementById('msg').innerText = "جاري الحفظ...";
-        await fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify({data: subs}) });
-        setTimeout(() => { document.getElementById('msg').innerText = "تم التحديث ✅"; load(); }, 2000);
-    }
-    function addNew() {
-        let n = { type: 'xtream', host: document.getElementById('host').value.trim(), user: document.getElementById('user').value.trim(), pass: document.getElementById('pass').value.trim(), status: document.getElementById('status').value };
-        if(!n.user) return;
-        subs.push(n); sync();
-    }
-    function del(i) { if(confirm("حذف؟")) { subs.splice(i,1); sync(); } }
-    function toggle(i) { subs[i].status = subs[i].status==='active'?'expired':'active'; sync(); }
-    async function clearAllData() {
-        if(confirm("مسح الكل؟")) {
-            await fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify({action: "clear_all"}) });
-            setTimeout(load, 2000);
+
+    <div class="list-container" id="list">
+        <p style="text-align: center; opacity: 0.5;">جاري تحميل القائمة...</p>
+    </div>
+
+    <script>
+        const API = "https://script.google.com/macros/s/AKfycbzOXcDjry46kvFffKKuyAITskcxIiJxJ7dUqQZYE92P1wOkLWlF_46OpBifsNB4eQDP/exec";
+        let subscriptions = [];
+
+        window.onload = loadData;
+
+        async function loadData() {
+            try {
+                const res = await fetch(API);
+                const data = await res.json();
+                subscriptions = Array.isArray(data) ? data : [];
+                renderList();
+            } catch(e) { 
+                console.error("Error loading data");
+                document.getElementById('list').innerHTML = '<p style="color:red">فشل جلب البيانات</p>';
+            }
         }
-    }
-</script>
+
+        function renderList() {
+            const listDiv = document.getElementById('list');
+            listDiv.innerHTML = subscriptions.length === 0 ? '<p style="text-align:center; opacity:0.5;">لا يوجد اشتراكات</p>' : '';
+            
+            subscriptions.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                if(item.status === 'expired') div.style.borderRightColor = '#ff4d4d';
+                
+                div.innerHTML = `
+                    <div class="item-info">
+                        <b>${item.user}</b>
+                        <p>${item.host}</p>
+                        <small>${item.status === 'active' ? 'نشط ✅' : 'متوقف ❌'}</small>
+                    </div>
+                    <div class="actions">
+                        <button class="btn-mini btn-toggle" onclick="toggleStatus(${index})">حالة</button>
+                        <button class="btn-mini btn-del" onclick="deleteItem(${index})">حذف</button>
+                    </div>
+                `;
+                listDiv.appendChild(div);
+            });
+        }
+
+        async function syncWithServer() {
+            document.getElementById('msg').innerText = "جاري الحفظ في Google Sheets...";
+            try {
+                // إرسال كائن يحتوي على action و data كما هو مطلوب في السكربت الجديد
+                const payload = {
+                    action: "save",
+                    data: subscriptions
+                };
+                await fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+                document.getElementById('msg').innerText = "✅ تم الحفظ بنجاح!";
+                setTimeout(() => document.getElementById('msg').innerText = "", 2000);
+            } catch(e) { document.getElementById('msg').innerText = "❌ فشل الحفظ"; }
+        }
+
+        function addNew() {
+            const host = document.getElementById('host').value.trim();
+            const user = document.getElementById('user').value.trim();
+            const pass = document.getElementById('pass').value.trim();
+            const status = document.getElementById('status').value;
+
+            if(!host || !user || !pass) return alert("املا الخانات");
+
+            subscriptions.push({ host, user, pass, status });
+            renderList();
+            syncWithServer();
+            
+            document.getElementById('host').value = '';
+            document.getElementById('user').value = '';
+            document.getElementById('pass').value = '';
+        }
+
+        function deleteItem(index) {
+            if(confirm("هل تريد الحذف؟")) {
+                subscriptions.splice(index, 1);
+                renderList();
+                syncWithServer();
+            }
+        }
+
+        function toggleStatus(index) {
+            subscriptions[index].status = subscriptions[index].status === 'active' ? 'expired' : 'active';
+            renderList();
+            syncWithServer();
+        }
+    </script>
 </body>
 </html>
